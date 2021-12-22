@@ -7,32 +7,41 @@ export class Physics {
 
         this.staticCollidable = [];
         this.dynamicCollidable = []; // Only check these agains others
+        this.gravity = .0001;
 
         this.initialize();
     }
 
     initialize() {
         this.scene.traverse(node => {
-            if (node.name === "Car") {
-                
-            } else if (node.name === "Car") {
-                
+            if (node.collidable === "STATIC") {
+                this.staticCollidable.push(node);
+            } else if (node.collidable === "DYNAMIC") {
+                this.dynamicCollidable.push(node);
             }
         });
     }
 
     update(dt) {
-        this.scene.traverse(node => {
+        for(const node of this.dynamicCollidable) {
+            //node.translation[2] -= this.gravitiy * dt;
+            //vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
+            node.updateTransform();
+            for(const other of this.staticCollidable) {
+                this.resolveCollision(node, other);
+            }
+        }
+        /*this.scene.traverse(node => {
             if (node.name === "Car") {
-                //vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
+                vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
                 node.updateTransform();
                 this.scene.traverse(other => {
-                    if (node !== other && !"Platform,Sun,Empty,upper_grill,lower_grill,Camera,Camera.001,Sun_Orientation,front_left_wheel,front_right_wheel,rear_left_wheel,rear_right_wheel".includes(other.name)) {
+                    if (node !== other && other.collidable === "STATIC") {
                         this.resolveCollision(node, other);
                     }
                 });
             }
-        });
+        });*/
     }
 
     intervalIntersection(min1, max1, min2, max2) {
@@ -71,7 +80,10 @@ export class Physics {
             return;
         }
 
-        console.log(a,b)
+        
+        a.velocity = vec3.fromValues(0,0,0);
+
+        //console.log(b);
 
         // Move node A minimally to avoid collision.
         const diffa = vec3.sub(vec3.create(), maxb, mina);
@@ -105,7 +117,8 @@ export class Physics {
         }
 
         vec3.add(a.translation, a.translation, minDirection);
-        a.updateTransform();
+        //a.updateTransform();
+        a.updateMatrix();
     }
 
 }

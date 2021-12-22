@@ -8,7 +8,7 @@ export class CarEngine {
 
         this.source = null;
 
-        this.pitch = { step: 0, min: 1, max: 2.2 };
+        this.pitch = { step: 0, min: 1, max: 3 };
     }
 
     getSound() {

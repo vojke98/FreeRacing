@@ -15,7 +15,8 @@ export class Car {
 
         this.r = vec3.fromValues(0, 0, 0);
 
-        this.velocity = vec3.fromValues(0, 0, 0);
+        this.body.velocity = vec3.fromValues(0, 0, 0);
+        this.mass = 1;
         this.maxSpeed = 80;
         this.direction = 0;
         this.friction = .05;
@@ -27,8 +28,8 @@ export class Car {
         this.engineSound = new CarEngine();
         this.engineSound.RPM = 0;
 
-        this.gauge = Gauge(
-            document.getElementById("gauge"),
+        this.speedGauge = Gauge(
+            document.getElementById("speed-gauge"),
             {
                 max: 250,
                 dialStartAngle: 180,
@@ -89,10 +90,10 @@ export class Car {
             this.engineSound.createPitchStep(.02);
         }
 
-        const velocity_len = vec3.len(c.velocity);
+        const velocity_len = vec3.len(c.body.velocity);
         this.engineSound.RPM = velocity_len / 10;
 
-        this.gauge.setValue(velocity_len * 10);
+        this.speedGauge.setValue(velocity_len * 10);
 
         if (c.keys['KeyD']) {
             c.pitch -= velocity_len * this.steering * this.direction;
@@ -104,24 +105,24 @@ export class Car {
         quat.fromEuler(c.body.rotation, c.yaw, c.pitch, 0);
 
         // 2: update velocity
-        vec3.scaleAndAdd(c.velocity, c.velocity, acc, dt * c.acceleration);
+        vec3.scaleAndAdd(c.body.velocity, c.body.velocity, acc, dt * c.acceleration);
 
         // 3: if no movement, apply friction
         if (!c.keys['KeyW'] && !c.keys['KeyS']) {
-            //vec3.scale(c.velocity, c.velocity, 1 - c.friction);
+            //vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
             this.engineSound.createPitchStep(-.04);
         }
 
         // APPLY FRICTION (SHOULD FIX TO APPLY ON SIDES ONLY !!!)
-        vec3.scale(c.velocity, c.velocity, 1 - c.friction);
+        vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
 
         // 4: limit speed
         if (velocity_len > c.maxSpeed) {
-            vec3.scale(c.velocity, c.velocity, c.maxSpeed / velocity_len);
+            vec3.scale(c.body.velocity, c.body.velocity, c.maxSpeed / velocity_len);
         }
 
         // 5: update translation
-        vec3.scaleAndAdd(c.body.translation, c.body.translation, c.velocity, dt);
+        vec3.scaleAndAdd(c.body.translation, c.body.translation, c.body.velocity, dt);
 
         // 6: update
         this.body.updateMatrix();

@@ -44,7 +44,7 @@ class App extends Application {
         const sun = await this.loader.loadNode('Sun');
         this.light = new Light(sun);
 
-        const car_body = await this.loader.loadNode("Car");
+        const car_body = await this.loader.loadNode("Car.001");
         this.car = new Car(car_body);
         this.pointerLockChangeHandler = this.pointerLockChangeHandler.bind(this);
 		document.addEventListener('pointerlockchange', this.pointerLockChangeHandler);
@@ -72,7 +72,7 @@ class App extends Application {
             }
 
             if (this.physics && this.run) {
-                //this.physics.update(dt);
+                this.physics.update(dt);
             }
         }
     }
@@ -85,6 +85,7 @@ class App extends Application {
 			this.canvas.requestPointerLock();
 			this.menu.style.visibility = "hidden";
             this.car.enable();
+            this.camera.camera.enable();
 			this.playlist.play();
             this.car.start();
 		}
