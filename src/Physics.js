@@ -32,11 +32,11 @@ export class Physics {
             //vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
             node.updateTransform();
             for(const other of this.staticCollidable) {
-                this.resolveCollision(node, other);
+                this.resolveCollision(node, other, true);
             }
 
             for(const other of this.interactiveCollidable) {
-                const interact = this.resolveCollision(node, other);
+                const interact = this.resolveCollision(node, other, false);
 
                 if(interact) other.react();
             }
@@ -64,7 +64,7 @@ export class Physics {
             && this.intervalIntersection(aabb1.min[2], aabb1.max[2], aabb2.min[2], aabb2.max[2]);
     }
 
-    resolveCollision(a, b) {
+    resolveCollision(a, b, staticB) {
         // Update bounding boxes with global translation.
         const ta = a.matrix;
         const tb = b.matrix;
@@ -89,10 +89,6 @@ export class Physics {
         if (!isColliding) {
             return false;
         }
-
-        a.velocity = vec3.fromValues(0,0,0);
-
-        //console.log(b);
 
         // Move node A minimally to avoid collision.
         const diffa = vec3.sub(vec3.create(), maxb, mina);
@@ -126,7 +122,14 @@ export class Physics {
         }
 
         vec3.add(a.translation, a.translation, minDirection);
-        //a.updateTransform();
+
+        if(staticB) a.velocity = vec3.fromValues(0,0,0);
+        else {
+            minDirection[0] *= -1;
+            minDirection[2] *= -1;
+            vec3.add(b.translation, b.translation, minDirection);
+            b.updateMatrix();
+        }
         a.updateMatrix();
 
         return true;

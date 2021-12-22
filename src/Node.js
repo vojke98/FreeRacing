@@ -6,6 +6,9 @@ export class Node {
         this.name = options.name ? options.name : null;
         if(options.extras) {
             this.collidable = options.extras.collidable ? options.extras.collidable : "EMPTY";
+            if(this.collidable === "INTERACTIVE") {
+                this.velocity = vec3.fromValues(0, 0, 0);
+            }
 
             if(options.extras.sound) {
                 this.sound = new Audio("./res/audio/" + options.extras.sound);
