@@ -4,7 +4,14 @@ export class Node {
 
     constructor(options = {}) {
         this.name = options.name ? options.name : null;
-        this.collidable = options.extras ? options.extras.collidable : "EMPTY";
+        if(options.extras) {
+            this.collidable = options.extras.collidable ? options.extras.collidable : "EMPTY";
+
+            if(options.extras.sound) {
+                this.sound = new Audio("./res/audio/" + options.extras.sound);
+                this.sound.volume = .3;
+            }
+        }
         this.translation = options.translation ? vec3.clone(options.translation) : vec3.fromValues(0, 0, 0);
         this.rotation = options.rotation ? quat.clone(options.rotation) : quat.fromValues(0, 0, 0, 1);
         this.scale = options.scale ? vec3.clone(options.scale) : vec3.fromValues(1, 1, 1);
@@ -127,6 +134,10 @@ export class Node {
         this.translation[2] = that.translation[2];
 
         quat.fromEuler(this.rotation, -90, 0, 0);
+    }
+
+    react() {
+        if(this.sound) this.sound.play();
     }
 
 }

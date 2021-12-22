@@ -885,6 +885,10 @@
             ]
         },
         {
+            "extras" : {
+                "collidable" : "INTERACTIVE",
+                "sound" : "animals/sheep.wav"
+            },
             "mesh" : 44,
             "name" : "Icosphere.003_Icosphere.009",
             "rotation" : [

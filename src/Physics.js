@@ -7,6 +7,7 @@ export class Physics {
 
         this.staticCollidable = [];
         this.dynamicCollidable = []; // Only check these agains others
+        this.interactiveCollidable = [];
         this.gravity = .0001;
 
         this.initialize();
@@ -19,6 +20,9 @@ export class Physics {
             } else if (node.collidable === "DYNAMIC") {
                 this.dynamicCollidable.push(node);
             }
+            else if (node.collidable === "INTERACTIVE") {
+                this.interactiveCollidable.push(node);
+            }
         });
     }
 
@@ -29,6 +33,12 @@ export class Physics {
             node.updateTransform();
             for(const other of this.staticCollidable) {
                 this.resolveCollision(node, other);
+            }
+
+            for(const other of this.interactiveCollidable) {
+                const interact = this.resolveCollision(node, other);
+
+                if(interact) other.react();
             }
         }
         /*this.scene.traverse(node => {
@@ -77,10 +87,9 @@ export class Physics {
         });
 
         if (!isColliding) {
-            return;
+            return false;
         }
 
-        
         a.velocity = vec3.fromValues(0,0,0);
 
         //console.log(b);
@@ -119,6 +128,8 @@ export class Physics {
         vec3.add(a.translation, a.translation, minDirection);
         //a.updateTransform();
         a.updateMatrix();
+
+        return true;
     }
 
 }

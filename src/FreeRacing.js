@@ -36,7 +36,7 @@ class App extends Application {
 
     mouseWheelHandler(e) {
         this.zoom -= e.deltaY * 0.02;
-        this.zoom = Math.min(Math.max(20, this.zoom), 40);
+        this.zoom = Math.min(Math.max(-60, this.zoom), 40);
         this.camera.translation[1] = 20-this.zoom;
     }
 
