@@ -295,7 +295,7 @@ export class GLTFLoader {
         }
 
         const node = new Node(options);
-        //if(node.camera) node.camera.node = node;
+
         this.cache.set(gltfSpec, node);
         return node;
     }

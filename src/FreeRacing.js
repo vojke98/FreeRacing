@@ -30,8 +30,14 @@ class App extends Application {
         this.initialize();
 
         this.physics = new Physics(this.scene);
+        this.zoom = 20;
+        this.mouseWheelHandler = this.mouseWheelHandler.bind(this);
+    }
 
-        console.log(this.camera);
+    mouseWheelHandler(e) {
+        this.zoom -= e.deltaY * 0.02;
+        this.zoom = Math.min(Math.max(20, this.zoom), 40);
+        this.camera.translation[1] = 20-this.zoom;
     }
 
     async initialize() {
@@ -85,7 +91,7 @@ class App extends Application {
 			this.canvas.requestPointerLock();
 			this.menu.style.visibility = "hidden";
             this.car.enable();
-            this.camera.camera.enable();
+            document.addEventListener('wheel', this.mouseWheelHandler);
 			this.playlist.play();
             this.car.start();
 		}
