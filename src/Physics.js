@@ -9,6 +9,7 @@ export class Physics {
         this.dynamicCollidable = []; // Only check these agains others
         this.interactiveCollidable = [];
         this.gravity = .0001;
+        this.friction = .1;
 
         this.initialize();
     }
@@ -30,6 +31,7 @@ export class Physics {
         for(const node of this.dynamicCollidable) {
             //node.translation[2] -= this.gravitiy * dt;
             //vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
+            vec3.scale(node.velocity, node.velocity, 1 - this.friction);
             node.updateTransform();
             for(const other of this.staticCollidable) {
                 this.resolveCollision(node, other, true);
@@ -72,19 +74,28 @@ export class Physics {
         const posa = mat4.getTranslation(vec3.create(), ta);
         const posb = mat4.getTranslation(vec3.create(), tb);
 
-        const mina = vec3.add(vec3.create(), posa, a.aabb.min);
-        const maxa = vec3.add(vec3.create(), posa, a.aabb.max);
-        const minb = vec3.add(vec3.create(), posb, b.aabb.min);
-        const maxb = vec3.add(vec3.create(), posb, b.aabb.max);
+        let isColliding, mina, maxa, minb, maxb;
 
-        // Check if there is collision.
-        const isColliding = this.aabbIntersection({
-            min: mina,
-            max: maxa
-        }, {
-            min: minb,
-            max: maxb
-        });
+        for(let box1 of a.aabb) {
+            mina = vec3.add(vec3.create(), posa, box1.min);
+            maxa = vec3.add(vec3.create(), posa, box1.max);
+            for(let box2 of b.aabb) {
+                minb = vec3.add(vec3.create(), posb, box2.min);
+                maxb = vec3.add(vec3.create(), posb, box2.max);
+
+                // Check if there is collision.
+                isColliding = this.aabbIntersection({
+                    min: mina,
+                    max: maxa
+                }, {
+                    min: minb,
+                    max: maxb
+                });
+
+                if(isColliding) break;
+            }
+            if(isColliding) break;
+        }
 
         if (!isColliding) {
             return false;
@@ -127,8 +138,8 @@ export class Physics {
         else {
             minDirection[0] *= -1;
             minDirection[2] *= -1;
-            vec3.add(b.translation, b.translation, minDirection);
-            b.updateMatrix();
+            //vec3.add(b.translation, b.translation, minDirection);
+            //b.updateMatrix();
         }
         a.updateMatrix();
 

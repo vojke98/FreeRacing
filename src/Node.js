@@ -34,30 +34,14 @@ export class Node {
             child.parent = this;
         }
 
-        /*this.aabb = {
-            "min": [0, 0, 0],
-            "max": [0, 0, 0]
-        }
+        this.aabb = [];
 
-        if(this.mesh){
-            const pos = this.mesh.primitives[0].attributes.POSITION;
-
-            if(pos.min[0] < this.aabb.min[0]) this.aabb.min[0] = pos.min[0];
-            if(pos.min[1] < this.aabb.min[1]) this.aabb.min[1] = pos.min[1];
-            if(pos.min[2] < this.aabb.min[2]) this.aabb.min[2] = pos.min[2];
-
-            if(pos.max[0] > this.aabb.max[0]) this.aabb.max[0] = pos.max[0];
-            if(pos.max[1] > this.aabb.max[1]) this.aabb.max[1] = pos.max[1];
-            if(pos.max[2] > this.aabb.max[2]) this.aabb.max[2] = pos.max[2];
-        }*/
-
-        let min = vec3.create();
-        vec3.scale(min, this.scale, -2);
-        let max = vec3.create();
-        vec3.scale(max, this.scale, 2);
-        this.aabb = {
-            "min": min,
-            "max": max
+        if(this.mesh)
+        for(const primitive of this.mesh.primitives) {
+            const pos = primitive.attributes.POSITION;
+            const min = vec3.fromValues(pos.min[0], pos.min[1], pos.min[2]);
+            const max = vec3.fromValues(pos.max[0], pos.max[1], pos.max[2]);
+            this.aabb.push({"min": min, "max": max});
         }
 
         this.parent = null;

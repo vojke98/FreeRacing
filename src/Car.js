@@ -17,11 +17,9 @@ export class Car {
 
         this.body.velocity = vec3.fromValues(0, 0, 0);
         this.mass = 1;
-        this.maxSpeed = 80;
-        this.direction = 0;
-        this.friction = .05;
+        this.maxSpeed = 8;
         this.acceleration = 50;
-        this.steering = .3;
+        this.steering = .6;
         this.pitch = 0;
         this.yaw = 0;
 
@@ -73,34 +71,39 @@ export class Car {
 
         const forward = c.body.getForward();
 
+        const velocity_len = vec3.len(c.body.velocity);
+
         // 1: add movement acceleration
         let acc = vec3.create();
         if (c.keys['KeyW']) {
-            vec3.sub(acc, acc, forward);
-            c.maxSpeed = 50;
-            this.direction = 1;
+            vec3.add(acc, acc, forward);
+            c.maxSpeed = 8;
             this.engineSound.pitch.max = 2.2;
             this.engineSound.createPitchStep(.02);
+
+            if (c.keys['KeyD']) {
+                c.pitch -= velocity_len * this.steering;
+            }
+            if (c.keys['KeyA']) {
+                c.pitch += velocity_len * this.steering;
+            }
         }
         if (c.keys['KeyS']) {
-            vec3.add(acc, acc, forward);
-            c.maxSpeed = 15;
-            this.direction = -1;
+            vec3.sub(acc, acc, forward);
+            c.maxSpeed = 4;
             this.engineSound.pitch.max = 1.5;
             this.engineSound.createPitchStep(.02);
+
+            if (c.keys['KeyD']) {
+                c.pitch += velocity_len * this.steering;
+            }
+            if (c.keys['KeyA']) {
+                c.pitch -= velocity_len * this.steering;
+            }
         }
 
-        const velocity_len = vec3.len(c.body.velocity);
         this.engineSound.RPM = velocity_len / 10;
-
-        this.speedGauge.setValue(velocity_len * 10);
-
-        if (c.keys['KeyD']) {
-            c.pitch -= velocity_len * this.steering * this.direction;
-        }
-        if (c.keys['KeyA']) {
-            c.pitch += velocity_len * this.steering * this.direction;
-        }
+        this.speedGauge.setValue(velocity_len * 20);
 
         quat.fromEuler(c.body.rotation, c.yaw, c.pitch, 0);
 
@@ -114,8 +117,7 @@ export class Car {
         }
 
         // APPLY FRICTION (SHOULD FIX TO APPLY ON SIDES ONLY !!!)
-        vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
-
+        //vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
         // 4: limit speed
         if (velocity_len > c.maxSpeed) {
             vec3.scale(c.body.velocity, c.body.velocity, c.maxSpeed / velocity_len);
