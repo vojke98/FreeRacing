@@ -5,9 +5,13 @@ export class Node {
     constructor(options = {}) {
         this.name = options.name ? options.name : null;
         if(options.extras) {
-            this.collidable = options.extras.collidable ? options.extras.collidable : "EMPTY";
-            if(this.collidable === "INTERACTIVE") {
-                this.velocity = vec3.fromValues(0, 0, 0);
+            if(options.extras.collidable) {
+                this.collidable = options.extras.collidable;
+                if(this.collidable == "STATIC") {
+                    this.mass = 1;
+                } else {
+                    this.mass = .5;
+                }
             }
 
             if(options.extras.sound) {
@@ -45,6 +49,8 @@ export class Node {
         }
 
         this.parent = null;
+
+        this.velocity = vec3.fromValues(0, 0, 0);
     }
 
     updateTransform() {

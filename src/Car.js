@@ -16,7 +16,6 @@ export class Car {
         this.r = vec3.fromValues(0, 0, 0);
 
         this.body.velocity = vec3.fromValues(0, 0, 0);
-        this.mass = 1;
         this.maxSpeed = 8;
         this.acceleration = 50;
         this.steering = .6;
@@ -24,7 +23,6 @@ export class Car {
         this.yaw = 0;
 
         this.engineSound = new CarEngine();
-        this.engineSound.RPM = 0;
 
         this.speedGauge = Gauge(
             document.getElementById("speed-gauge"),
@@ -102,7 +100,6 @@ export class Car {
             }
         }
 
-        this.engineSound.RPM = velocity_len / 10;
         this.speedGauge.setValue(velocity_len * 20);
 
         quat.fromEuler(c.body.rotation, c.yaw, c.pitch, 0);
@@ -119,15 +116,7 @@ export class Car {
         // APPLY FRICTION (SHOULD FIX TO APPLY ON SIDES ONLY !!!)
         //vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
         // 4: limit speed
-        if (velocity_len > c.maxSpeed) {
-            vec3.scale(c.body.velocity, c.body.velocity, c.maxSpeed / velocity_len);
-        }
-
-        // 5: update translation
-        vec3.scaleAndAdd(c.body.translation, c.body.translation, c.body.velocity, dt);
-
-        // 6: update
-        this.body.updateMatrix();
+        if (velocity_len > c.maxSpeed) vec3.scale(c.body.velocity, c.body.velocity, c.maxSpeed / velocity_len);
     }
 
     keyDownHandler(e) {
