@@ -4,16 +4,16 @@
 	<head>
 		<title>Free Racing</title>
 
+		<script type="text/javascript" src="./lib/jquery-3.6.0.min.js"></script>
+		<script type="text/javascript" src="./lib/popper.min.js"></script>
 		<script type="text/javascript" src="./lib/gl-matrix-min.js"></script>
 		<script type="text/javascript" src="./lib/dat.gui.min.js"></script>
 		<script type="text/javascript" src="./lib/gauge.js"></script>
 		<script type="text/javascript" src="./lib/gamepad.js"></script>
 		<script type="module" src="FreeRacing.js"></script>
 
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="./lib/bootstrap-4.5.3-dist/css/bootstrap.min.css">
+		<script src="./lib/bootstrap-4.5.3-dist/js/bootstrap.min.js"></script>
 
 	<body>
 
@@ -46,8 +46,9 @@
 		</div>
 		<div id="scene">
 			<div class="overlay" style="width: 100%; height: 100%; padding: 20px;">
-				<h2 id="timeLbl" style="color: gray;
-				mix-blend-mode: difference;">Time: 0</h2>
+				<h2 id="timeLbl" style="color: rgb(153, 153, 153);">Time: 0</h2>
+
+				<div id="map" class="map-container"><img style="width: 100%;" src="./res/images/map.png" alt=""></div>
 
 				<div id="speed-gauge" class="gauge-container"></div>
 
@@ -73,23 +74,11 @@
 		padding: 0;
 	}
 
-	* {
-		/*font-family: sans-serif;*/
-	}*
-
 	.fullscreen {
 		width: 100vw;
 		height: 100vh;
 		overflow: hidden;
 	}
-
-	/*.gauge {
-		width: 320px;
-      	height: 240px;
-		position: absolute;
-		right: 0;
-		bottom: 0;
-	}*/
 
 	.fullscreen>* {
 		width: 100%;
@@ -143,6 +132,27 @@
 		z-index: 2;
 	}
 
+	.map-container {
+		width: 15vw;
+		display: block;
+		position: absolute;
+		/* float: left; */
+		overflow: hidden;
+		left: 1rem;
+		bottom: 1rem;
+		background-color: #00000055;
+		border-radius: 50%;
+		overflow: hidden;
+		backdrop-filter: blur(8px);
+	}
+
+	.map-container img {
+		display: block;
+		transition: transform .4s;   /* smoother zoom */
+		transform: scale(2);
+		transform-origin: 50% 50%;
+	}
+
 	.gauge-container {
 		width: 10vw;
 		height: auto;
@@ -188,7 +198,6 @@
 	}
 
 	.gauge-container .text-container>text {
-		/*transform: translate3d(-13%, -11%, 0);*/
 		text-anchor: end;
 		alignment-baseline: auto;
 		dominant-baseline: auto;

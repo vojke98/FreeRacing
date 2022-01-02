@@ -26,33 +26,25 @@ export class Physics {
         });
     }
 
-    update(dt) {
-        this.scene.traverse(node => {
+    async update(dt) {
+        for (const node of this.dynamicCollidable) {
+            if (node.translation[1] > .1) node.velocity[1] -= .1;
+            else {
+                node.velocity[1] = 0;
+                node.translation[1] = 0;
+            }
+            node.updateMatrix();
+
             vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
 
-            if (node.collidable) {
-
-                if (node.translation[1] > .1) node.velocity[1] -= .1;
-                else {
-                    node.velocity[1] = 0;
-                    node.translation[1] = 0;
-                }
-
-                if (node.collidable === "DYNAMIC") {
-
-                    for (const other of this.staticCollidable) this.resolveCollision(node, other, "STATIC");
-
-                    for (const other of this.interactiveCollidable) this.resolveCollision(node, other, "INTERACTIVE");
-
-                    for (const other of this.dynamicCollidable) {
-                        if (node != other) this.resolveCollision(node, other, "DYNAMIC");
-                    }
-                }
-
+            for (const other of this.staticCollidable) this.resolveCollision(node, other, "STATIC");
+            for (const other of this.interactiveCollidable) this.resolveCollision(node, other, "INTERACTIVE");
+            for (const other of this.dynamicCollidable) {
+                if (node != other) this.resolveCollision(node, other, "DYNAMIC");
             }
+
             vec3.scale(node.velocity, node.velocity, 1 - this.friction);
-            node.updateMatrix();
-        });
+        }
     }
 
     intervalIntersection(min1, max1, min2, max2) {
@@ -136,11 +128,12 @@ export class Physics {
             vec3.scale(a.velocity, a.velocity, 1 - b.mass);
         } else if (bType === "INTERACTIVE") {
             vec3.add(a.translation, a.translation, minDirection);
-            //vec3.scale(a.velocity, a.velocity, 1 - b.mass);
+            vec3.scale(a.velocity, a.velocity, 1 - b.mass);
 
             vec3.scale(minDirection, minDirection, -1);
 
             vec3.add(b.translation, b.translation, minDirection);
+            b.updateMatrix();
             b.react();
         }
     }

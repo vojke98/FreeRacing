@@ -24,12 +24,6 @@ export class Node {
         this.scale = options.scale ? vec3.clone(options.scale) : vec3.fromValues(1, 1, 1);
         this.matrix = options.matrix ? mat4.clone(options.matrix) : mat4.create();
 
-        if (options.matrix) {
-            this.updateTransform();
-        } else if (options.translation || options.rotation || options.scale) {
-            this.updateMatrix();
-        }
-
         this.camera = options.camera || null;
         this.mesh = options.mesh || null;
 
@@ -51,6 +45,12 @@ export class Node {
         this.parent = null;
 
         this.velocity = vec3.fromValues(0, 0, 0);
+
+        if (options.matrix) {
+            this.updateTransform();
+        } else if (options.translation || options.rotation || options.scale) {
+            this.updateMatrix();
+        }
     }
 
     updateTransform() {

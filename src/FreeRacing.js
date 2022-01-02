@@ -36,16 +36,16 @@ class App extends Application {
 
     mouseWheelHandler(e) {
         this.zoom -= e.deltaY * 0.02;
-        this.zoom = Math.min(Math.max(-60, this.zoom), 40);
-        this.camera.translation[1] = 20-this.zoom;
+        this.zoom = Math.min(Math.max(-10, this.zoom), 40);
+        this.camera.translation[1] = 20 - this.zoom;
     }
 
     async initialize() {
         this.btnStart = document.getElementById("start");
-		this.menu = document.getElementById("menu");
-		this.timeLbl = document.getElementById("timeLbl");
-		this.btnStart.addEventListener('click', () => this.play());
-		this.btnStart.innerText = "Resume game";
+        this.menu = document.getElementById("menu");
+        this.timeLbl = document.getElementById("timeLbl");
+        this.btnStart.addEventListener('click', () => this.play());
+        this.btnStart.innerText = "Resume game";
 
         const sun = await this.loader.loadNode('Sun');
         this.light = new Light(sun);
@@ -53,10 +53,10 @@ class App extends Application {
         const car_body = await this.loader.loadNode("Car.001");
         this.car = new Car(car_body);
         this.pointerLockChangeHandler = this.pointerLockChangeHandler.bind(this);
-		document.addEventListener('pointerlockchange', this.pointerLockChangeHandler);
+        document.addEventListener('pointerlockchange', this.pointerLockChangeHandler);
 
         this.playlist = new Playlist();
-		this.playlist.shuffle();
+        this.playlist.shuffle();
 
         this.run = false;
     }
@@ -84,40 +84,40 @@ class App extends Application {
     }
 
     play() {
-		if(this.gameover) {
-			this.start();
-		} else {
-			this.run = true;
-			this.canvas.requestPointerLock();
-			this.menu.style.visibility = "hidden";
+        if (this.gameover) {
+            this.start();
+        } else {
+            this.run = true;
+            this.canvas.requestPointerLock();
+            this.menu.style.visibility = "hidden";
             this.car.enable();
             document.addEventListener('wheel', this.mouseWheelHandler);
-			this.playlist.play();
+            this.playlist.play();
             this.car.start();
-		}
-	}
+        }
+    }
 
-	pause() {
-		this.run = false;
-		this.menu.style.visibility = "visible";
-		if(this.playlist) this.playlist.pause();
-        if(this.car) this.car.stop();
-	}
+    pause() {
+        this.run = false;
+        this.menu.style.visibility = "visible";
+        if (this.playlist) this.playlist.pause();
+        if (this.car) this.car.stop();
+    }
 
-	gameOver() {
-		this.gameover = true;
-		this.btnStart.innerText = "New game";
-		this.pause();
-	}
+    gameOver() {
+        this.gameover = true;
+        this.btnStart.innerText = "New game";
+        this.pause();
+    }
 
-	increaseTime() {
-		if(this.run) this.playingTime++;
-		this.timeLbl.innerText = "Running: " + this.playingTime + " sec";
-	}
+    increaseTime() {
+        if (this.run) this.playingTime++;
+        this.timeLbl.innerText = "Running: " + this.playingTime + " sec";
+    }
 
     pointerLockChangeHandler() {
-		if (document.pointerLockElement != this.canvas) this.pause();
-	}
+        if (document.pointerLockElement != this.canvas) this.pause();
+    }
 
     render() {
         if (this.renderer) this.renderer.render(this.scene, this.camera, this.light);

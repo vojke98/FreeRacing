@@ -13,13 +13,11 @@ export class Car {
         this.keyUpHandler = this.keyUpHandler.bind(this);
         this.keys = {};
 
-        this.r = vec3.fromValues(0, 0, 0);
-
         this.body.velocity = vec3.fromValues(0, 0, 0);
         this.maxSpeed = 8;
         this.acceleration = 50;
         this.steering = .6;
-        this.pitch = 0;
+        this.pitch = -90;
         this.yaw = 0;
 
         this.engineSound = new CarEngine();
@@ -47,76 +45,50 @@ export class Car {
         document.removeEventListener('keydown', this.keyDownHandler);
         document.removeEventListener('keyup', this.keyUpHandler);
 
-        for (let key in this.keys) {
-            this.keys[key] = false;
-        }
+        for (let key in this.keys) this.keys[key] = false;
     }
 
-    stop() {
-        if (this.engineSound) {
-            this.engineSound.stop();
-        }
-    }
+    stop() { if (this.engineSound) this.engineSound.stop(); }
 
-    start() {
-        if (this.engineSound) {
-            this.engineSound.start();
-        }
-    }
+    start() { if (this.engineSound) this.engineSound.start(); }
 
     update(dt) {
-        const c = this;
 
-        const forward = c.body.getForward();
-
-        const velocity_len = vec3.len(c.body.velocity);
+        const forward = this.body.getForward();
+        const velocity_len = vec3.len(this.body.velocity);
 
         // 1: add movement acceleration
         let acc = vec3.create();
-        if (c.keys['KeyW']) {
+        if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
-            c.maxSpeed = 8;
+            this.maxSpeed = 8;
             this.engineSound.pitch.max = 2.2;
             this.engineSound.createPitchStep(.02);
 
-            if (c.keys['KeyD']) {
-                c.pitch -= velocity_len * this.steering;
-            }
-            if (c.keys['KeyA']) {
-                c.pitch += velocity_len * this.steering;
-            }
-        }
-        if (c.keys['KeyS']) {
+            if (this.keys['KeyD']) this.pitch -= velocity_len * this.steering;
+            if (this.keys['KeyA']) this.pitch += velocity_len * this.steering;
+
+        } else if (this.keys['KeyS']) {
             vec3.sub(acc, acc, forward);
-            c.maxSpeed = 4;
-            this.engineSound.pitch.max = 1.5;
+            this.maxSpeed = 4;
+            this.engineSound.pitch.max = 1.2;
             this.engineSound.createPitchStep(.02);
 
-            if (c.keys['KeyD']) {
-                c.pitch += velocity_len * this.steering;
-            }
-            if (c.keys['KeyA']) {
-                c.pitch -= velocity_len * this.steering;
-            }
-        }
+            if (this.keys['KeyD']) this.pitch += velocity_len * this.steering;
+            if (this.keys['KeyA']) this.pitch -= velocity_len * this.steering;
+
+        } else this.engineSound.createPitchStep(-.04);
 
         this.speedGauge.setValue(velocity_len * 20);
 
-        quat.fromEuler(c.body.rotation, c.yaw, c.pitch, 0);
+        // 2: update rotation
+        quat.fromEuler(this.body.rotation, this.yaw, this.pitch, 0);
 
-        // 2: update velocity
-        vec3.scaleAndAdd(c.body.velocity, c.body.velocity, acc, dt * c.acceleration);
+        // 3: update velocity
+        vec3.scaleAndAdd(this.body.velocity, this.body.velocity, acc, dt * this.acceleration);
 
-        // 3: if no movement, apply friction
-        if (!c.keys['KeyW'] && !c.keys['KeyS']) {
-            //vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
-            this.engineSound.createPitchStep(-.04);
-        }
-
-        // APPLY FRICTION (SHOULD FIX TO APPLY ON SIDES ONLY !!!)
-        //vec3.scale(c.body.velocity, c.body.velocity, 1 - c.friction);
         // 4: limit speed
-        if (velocity_len > c.maxSpeed) vec3.scale(c.body.velocity, c.body.velocity, c.maxSpeed / velocity_len);
+        if (velocity_len > this.maxSpeed) vec3.scale(this.body.velocity, this.body.velocity, this.maxSpeed / velocity_len);
     }
 
     keyDownHandler(e) {
@@ -126,5 +98,4 @@ export class Car {
     keyUpHandler(e) {
         this.keys[e.code] = false;
     }
-
 }
