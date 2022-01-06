@@ -67,19 +67,14 @@ class App extends Application {
         this.startTime = this.time;
 
         if (this.scene) {
-            if (this.car && this.run) {
-                this.car.update(dt);
-            }
+            if (this.car && this.run)  this.car.update(dt);
 
             if (this.camera) {
                 this.camera.follow(this.car.body);
                 this.camera.updateMatrix();
-                //this.camera.camera.update(dt);
             }
 
-            if (this.physics && this.run) {
-                this.physics.update(dt);
-            }
+            if (this.physics && this.run) this.physics.update(dt);
         }
     }
 

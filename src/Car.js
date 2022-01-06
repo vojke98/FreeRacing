@@ -16,7 +16,7 @@ export class Car {
         this.body.velocity = vec3.fromValues(0, 0, 0);
         this.maxSpeed = 8;
         this.acceleration = 50;
-        this.steering = .6;
+        this.handling = .6;
         this.pitch = -90;
         this.yaw = 0;
 
@@ -32,6 +32,49 @@ export class Car {
                 value: 0
             }
         );
+
+        this.throttle = 0;
+        this.steer = 0;
+
+        Controller.search();
+
+        this.setController = this.setController.bind(this);
+        window.addEventListener('gc.controller.found', this.setController, false);
+
+        this.handleControllerStick = this.handleControllerStick.bind(this);
+        window.addEventListener('gc.analog.change', this.handleControllerStick, false);
+
+        this.handleControllerButtonHold = this.handleControllerButtonHold.bind(this);
+        window.addEventListener('gc.button.hold', this.handleControllerButtonHold, false);
+
+        this.handleControllerButtonRelease = this.handleControllerButtonRelease.bind(this);
+        window.addEventListener('gc.button.release', this.handleControllerButtonRelease, false);
+    }
+
+    setController(event) {
+        const controller = event.detail.controller;
+        console.log("Controller found at index " + controller.index + ".");
+        console.log("'" + controller.name + "' is ready!");
+        this.controller = controller;
+
+        this.controller.watch();
+    }
+
+    handleControllerStick(event) {
+        if(event.detail.name == 'LEFT_ANALOG_STICK') {
+            this.steer = -event.detail.position.x
+            this.keys["LStick"] = true;
+        }
+    }
+
+    handleControllerButtonHold(event) {
+        if(event.detail.name == 'RIGHT_SHOULDER_BOTTOM') this.throttle = event.detail.value;
+        if(event.detail.name == 'LEFT_SHOULDER_BOTTOM') this.throttle = -event.detail.value;
+    }
+
+    handleControllerButtonRelease(event) {
+        if(event.detail.name == 'RIGHT_SHOULDER_BOTTOM') this.throttle = 0;
+        if(event.detail.name == 'LEFT_SHOULDER_BOTTOM') this.throttle = 0;
     }
 
     enable() {
@@ -57,27 +100,25 @@ export class Car {
         const forward = this.body.getForward();
         const velocity_len = vec3.len(this.body.velocity);
 
-        // 1: add movement acceleration
-        let acc = vec3.create();
-        if (this.keys['KeyW']) {
-            vec3.add(acc, acc, forward);
+        if (this.throttle > 0) {
             this.maxSpeed = 8;
             this.engineSound.pitch.max = 2.2;
             this.engineSound.createPitchStep(.02);
 
-            if (this.keys['KeyD']) this.pitch -= velocity_len * this.steering;
-            if (this.keys['KeyA']) this.pitch += velocity_len * this.steering;
-
-        } else if (this.keys['KeyS']) {
-            vec3.sub(acc, acc, forward);
+            this.pitch += velocity_len * this.handling * this.steer;
+        } else if (this.throttle < 0) {
             this.maxSpeed = 4;
             this.engineSound.pitch.max = 1.2;
             this.engineSound.createPitchStep(.02);
 
-            if (this.keys['KeyD']) this.pitch += velocity_len * this.steering;
-            if (this.keys['KeyA']) this.pitch -= velocity_len * this.steering;
-
+            this.pitch -= velocity_len * this.handling * this.steer;
         } else this.engineSound.createPitchStep(-.04);
+
+        // 1: add movement acceleration
+        let acc = vec3.create();
+
+        vec3.scale(forward, forward, this.throttle);
+        vec3.add(acc, acc, forward);
 
         this.speedGauge.setValue(velocity_len * 20);
 
@@ -91,11 +132,25 @@ export class Car {
         if (velocity_len > this.maxSpeed) vec3.scale(this.body.velocity, this.body.velocity, this.maxSpeed / velocity_len);
     }
 
+    updateHandling() {
+        let t = 0;
+        let s = 0;
+        if (this.keys['KeyW']) t = 1;
+        else if (this.keys['KeyS']) t = -1;
+        if (this.keys['KeyA']) s++;
+        if (this.keys['KeyD']) s--;
+
+        this.throttle = t;
+        this.steer = s;
+    }
+
     keyDownHandler(e) {
         this.keys[e.code] = true;
+        this.updateHandling();
     }
 
     keyUpHandler(e) {
         this.keys[e.code] = false;
+        this.updateHandling();
     }
 }
