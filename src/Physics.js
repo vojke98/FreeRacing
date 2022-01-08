@@ -2,7 +2,7 @@ import { vec3, mat4 } from './lib/gl-matrix-module.js';
 
 export class Physics {
 
-    constructor(scene) {
+    constructor(scene, races) {
         this.scene = scene;
 
         this.staticCollidable = [];
@@ -10,6 +10,9 @@ export class Physics {
         this.interactiveCollidable = [];
         this.gravity = .0001;
         this.friction = .1;
+
+        this.races = races;
+        this.activeRace = null;
 
         this.initialize();
     }
@@ -37,6 +40,14 @@ export class Physics {
 
             vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
 
+            if(!this.activeRace) {
+                for (const race of this.races) {
+                    if(!race.finished) this.resolveCollision(node, race.checkpoints[0].node, "RACE_START", race);
+                    race.checkpoints[0].spin();
+                }
+            }
+
+            else this.resolveCollision(node, this.activeRace.getCheckpoint().node, "RACE_CHECK", this.activeRace);
             for (const other of this.staticCollidable) this.resolveCollision(node, other, "STATIC");
             for (const other of this.interactiveCollidable) this.resolveCollision(node, other, "INTERACTIVE");
             for (const other of this.dynamicCollidable) {
@@ -57,7 +68,7 @@ export class Physics {
             && this.intervalIntersection(aabb1.min[2], aabb1.max[2], aabb2.min[2], aabb2.max[2]);
     }
 
-    resolveCollision(a, b, bType) {
+    resolveCollision(a, b, bType, race = null) {
         const ta = a.matrix;
         const tb = b.matrix;
 
@@ -85,6 +96,19 @@ export class Physics {
 
                     if (isColliding) break check;
                 }
+            }
+            return;
+        }
+
+        if(bType === "RACE_START") {
+            race.start();
+            this.activeRace = race;
+            return;
+        }else if(bType === "RACE_CHECK") {
+            race.check();
+            if(race.finished) {
+                this.activeRace.finished = false;
+                this.activeRace = null;
             }
             return;
         }

@@ -10,6 +10,10 @@ export class Scene {
         this.nodes.push(node);
     }
 
+    removeNode(node) {
+        this.nodes = this.nodes.filter((item) => item != node);
+    }
+
     traverse(before, after) {
         for (const node of this.nodes) {
             this.traverseNode(node, before, after);

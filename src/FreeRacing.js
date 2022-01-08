@@ -5,6 +5,8 @@ import { Playlist } from './Playlist.js';
 import { Physics } from './Physics.js';
 import { Car } from './Car.js';
 import { Light } from './Light.js';
+import { Race } from './Race.js';
+import { Checkpoint } from './Checkpoint.js';
 
 class App extends Application {
 
@@ -29,7 +31,8 @@ class App extends Application {
 
         this.initialize();
 
-        this.physics = new Physics(this.scene);
+        const races = await this.createRaces();
+        this.physics = new Physics(this.scene, races);
         this.zoom = 20;
         this.mouseWheelHandler = this.mouseWheelHandler.bind(this);
     }
@@ -43,7 +46,6 @@ class App extends Application {
     async initialize() {
         this.btnStart = document.getElementById("start");
         this.menu = document.getElementById("menu");
-        this.timeLbl = document.getElementById("timeLbl");
         this.btnStart.addEventListener('click', () => this.play());
         this.btnStart.innerText = "Resume game";
 
@@ -54,11 +56,49 @@ class App extends Application {
         this.car = new Car(car_body);
         this.pointerLockChangeHandler = this.pointerLockChangeHandler.bind(this);
         document.addEventListener('pointerlockchange', this.pointerLockChangeHandler);
+        this.handleControllerButtonPress = this.handleControllerButtonPress.bind(this);
+        window.addEventListener('gc.button.press', this.handleControllerButtonPress, false);
 
         this.playlist = new Playlist();
         this.playlist.shuffle();
 
         this.run = false;
+    }
+
+    handleControllerButtonPress(event) {
+        if(event.detail.name == 'HOME') {
+            if(this.run) this.pause();
+            else this.play();
+        }
+    }
+
+    async createRaces() {
+        const start = await this.loader.loadNode("Start");
+        const checkpoint = await this.loader.loadNode("Checkpoint");
+        const finish = await this.loader.loadNode("Finish");
+
+        const checkpoints = [];
+
+        checkpoints.push(new Checkpoint(start.clone(), [12, 0, -23], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [12, 0, -33], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [12, 0, -43], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [12, 0, -53], [0, 45, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [2, 0, -53], [0, 90, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-8, 0, -53], [0, 90, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-18, 0, -53], [0, 90, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-28, 0, -53], [0, 135, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-28, 0, -43], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-28, 0, -33], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-28, 0, -23], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-28, 0, -13], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-28, 0, -3], [0, 0, 0]));
+        checkpoints.push(new Checkpoint(checkpoint.clone(), [-18, 0, 1], [0, 90, 0]));
+        checkpoints.push(new Checkpoint(finish.clone(), [-12, 0, -7], [0, 0, 0]));
+
+        const races = [];
+        races.push(new Race(this.scene, checkpoints));
+
+        return races;
     }
 
     update() {
@@ -67,7 +107,7 @@ class App extends Application {
         this.startTime = this.time;
 
         if (this.scene) {
-            if (this.car && this.run)  this.car.update(dt);
+            if (this.car && this.run) this.car.update(dt);
 
             if (this.camera) {
                 this.camera.follow(this.car.body);
@@ -79,17 +119,14 @@ class App extends Application {
     }
 
     play() {
-        if (this.gameover) {
-            this.start();
-        } else {
-            this.run = true;
-            this.canvas.requestPointerLock();
-            this.menu.style.visibility = "hidden";
-            this.car.enable();
-            document.addEventListener('wheel', this.mouseWheelHandler);
-            this.playlist.play();
-            this.car.start();
-        }
+        this.run = true;
+        this.canvas.requestPointerLock();
+        this.menu.style.visibility = "hidden";
+        this.car.enable();
+        document.addEventListener('wheel', this.mouseWheelHandler);
+        this.playlist.play();
+        this.car.start();
+        if (this.physics.activeRace) this.physics.activeRace.continue();
     }
 
     pause() {
@@ -97,17 +134,7 @@ class App extends Application {
         this.menu.style.visibility = "visible";
         if (this.playlist) this.playlist.pause();
         if (this.car) this.car.stop();
-    }
-
-    gameOver() {
-        this.gameover = true;
-        this.btnStart.innerText = "New game";
-        this.pause();
-    }
-
-    increaseTime() {
-        if (this.run) this.playingTime++;
-        this.timeLbl.innerText = "Running: " + this.playingTime + " sec";
+        if (this.physics.activeRace) this.physics.activeRace.pause();
     }
 
     pointerLockChangeHandler() {
